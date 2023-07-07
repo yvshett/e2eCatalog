@@ -1,0 +1,38 @@
+---
+defaults: &defaults
+  buildpacks:
+    - https://github.com/cloudfoundry/dotnet-core-buildpack
+    # https://github.com/cloudfoundry/nginx-buildpack.git
+  memory: 4096M
+  disk_quota: 4096M
+  instances: 4
+  path: ../../bin/Release/net6.0/publish
+  env:
+    FORCE_HTTPS: true
+applications:
+  - name: dadt-api-prod
+    <<: *defaults
+    routes:
+      - route: dadt-api-prod.apps1-fm-int.icloud.intel.com
+      - route: dadt-api.intel.com
+    env:
+      NODE_ENV: production
+      ASPNETCORE_ENVIRONMENT: Production
+  - name: dadt-api-prod-batch
+    <<: *defaults
+    routes:
+      - route: dadt-api-prod-batch.apps1-fm-int.icloud.intel.com
+      - route: dadt-api-batch.intel.com
+    env:
+      NODE_ENV: production
+      ASPNETCORE_ENVIRONMENT: Production
+  - name: dadt-api-apigee-prod
+    <<: *defaults
+    instances: 3
+    routes:
+      - route: dadt-api-prod-apigee.apps1-fm-int.icloud.intel.com
+      - route: dadt-api-apigee.intel.com
+    env:
+      NODE_ENV: production
+      ASPNETCORE_ENVIRONMENT: Production
+      API_TYPE: Apigee

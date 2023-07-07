@@ -1,0 +1,30 @@
+---
+defaults: &defaults
+  buildpacks:
+    - https://github.com/cloudfoundry/dotnet-core-buildpack
+  memory: 4096M
+  disk_quota: 4096M
+  instances: 4
+  path: ../../bin/Release/net6.0/publish
+  env:
+    FORCE_HTTPS: true
+applications:
+  - name: dadt-api-dev
+    <<: *defaults
+    routes:
+      - route: dadt-api-dev.apps1-or-int.icloud.intel.com
+      - route: dadt-api-dev.intel.com
+    env:
+      NODE_ENV: development
+      ASPNETCORE_ENVIRONMENT: Development
+  - name: dadt-api-apigee-dev
+    <<: *defaults
+    instances: 1
+    routes:
+      - route: dadt-api-apigee-dev.apps1-or-int.icloud.intel.com
+      - route: dadt-api-apigee-dev.intel.com
+    env:
+      NODE_ENV: development
+      ASPNETCORE_ENVIRONMENT: Development
+      API_TYPE: Apigee
+      

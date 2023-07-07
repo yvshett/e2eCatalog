@@ -1,0 +1,46 @@
+---
+defaults: &defaults
+  buildpacks:
+    - https://github.com/cloudfoundry/dotnet-core-buildpack
+  memory: 4096M
+  disk_quota: 4096M
+  instances: 4
+  path: bin/Release/net6.0/publish
+  env:
+    FORCE_HTTPS: true
+applications:
+  - name: dadt-api-dev
+    <<: *defaults
+    routes:
+      - route: dadt-api-dev.apps1-or-int.icloud.intel.com
+      - route: dadt-api-dev.intel.com
+    env:
+      NODE_ENV: development
+      ASPNETCORE_ENVIRONMENT: Development
+  - name: dadt-api-pre
+    <<: *defaults
+    routes:
+      - route: dadt-api-pre.apps1-fm-int.icloud.intel.com
+      - route: dadt-api-pre.intel.com
+    env:
+      NODE_ENV: test
+      ASPNETCORE_ENVIRONMENT: Test
+  - name: dadt-api-prod
+    <<: *defaults
+    routes:
+      - route: dadt-api-prod.apps1-fm-int.icloud.intel.com
+      #- route: dadt-api-prod.apps1-or-int.icloud.intel.com
+      - route: dadt-api.intel.com
+    env:
+      NODE_ENV: production
+      ASPNETCORE_ENVIRONMENT: Production
+  - name: dadt-api-bench
+    <<: *defaults
+    routes:
+      #- route: dadt-api-bench.apps1-fm-int.icloud.intel.com
+      - route: dadt-api-bench.apps1-or-int.icloud.intel.com
+      - route: dadt-api-bench.intel.com
+    env:
+      NODE_ENV: bench
+      ASPNETCORE_ENVIRONMENT: Bench
+ 
