@@ -27,39 +27,10 @@ namespace DadtApi.Controllers
             _mapper = mapper;
         }
 
-        // GET api/User/11611764
-        [HttpGet("{wwid}")]
-        public async Task<ActionResult<User>> GetUserByWwid(string wwid)
-        {
-            return await _userService.GetUserByWwid(wwid);
-        }
+
 
         // GET api/User/me
-        [HttpGet("me")]
-        public async Task<ActionResult<UserMe>> GetUser()
-        {
-            try
-            {
-                UserMe user = new UserMe();
-                var wwid = await _users.GetCurrentUserWwid();
-                var currentUser = await _userService.GetUserByWwid(wwid);
-                user = _mapper.Map<UserMe>(currentUser);
-
-                var roleGroups = new Dictionary<string, string>();
-                _configuration.Bind("DADTAdminGroups", roleGroups);
-
-                // check user is in admin group
-                user.adminInd = await _users.CheckMemberGroupsAsync(roleGroups.Keys);
-
-                return user;
-            }
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-           
-        }
+        
 
         // GET api/User/search/<search text>
         [HttpGet("search/{term}")]

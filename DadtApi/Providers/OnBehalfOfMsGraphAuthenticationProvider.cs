@@ -40,7 +40,7 @@ namespace DadtApi.Providers
             var userAssertion = new UserAssertion(token, assertionType, userName);
 
             var authContext = new AuthenticationContext(_authSettings.Authority);
-            var clientCredential = new ClientCredential(_authSettings.ClientId, EncryptionHelper.Decrypt(_authSettings.ClientEncyptedSecret));
+            var clientCredential = new ClientCredential(_authSettings.ClientId, EncryptionHelper.DecryptString(_authSettings.ClientEncyptedSecret, CommonUtility.Constants.STR_ENCRYPT_DECRYPT_KEY));
 
             var result = await authContext.AcquireTokenAsync("https://graph.microsoft.com", clientCredential, userAssertion);
 

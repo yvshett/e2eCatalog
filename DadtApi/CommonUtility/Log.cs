@@ -41,7 +41,7 @@ namespace DadtApi.CommonUtility
             IapId = _configuration["CLFLogging:IapId"];
             appName = _configuration["CLFLogging:AppName"].ToString();
             org = _configuration["CLFLogging:AppAcronym"].ToString();
-            connStr = EncryptionHelper.Decrypt(_configuration["ConnectionStrings:DADTConnection"]);
+            connStr = EncryptionHelper.DecryptString(_configuration["ConnectionStrings:DADTConnection"], CommonUtility.Constants.STR_ENCRYPT_DECRYPT_KEY);
         }
        
         public StringBuilder sbOverallLogs = new StringBuilder();

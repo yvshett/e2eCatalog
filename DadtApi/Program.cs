@@ -101,20 +101,19 @@ builder.Services.AddSwaggerGen(c =>
     c.CustomSchemaIds(type => type.FullName);
 });
 // Register Entity Framework
-builder.Services.AddDbContext<dbContext>(options => options.UseNpgsql(EncryptionHelper.Decrypt(builder.Configuration["ConnectionStrings:DADTConnection"])));
+builder.Services.AddDbContext<dbContext>(options => options.UseNpgsql(EncryptionHelper.DecryptString(builder.Configuration["ConnectionStrings:DADTConnection"],DadtApi.CommonUtility.Constants.STR_ENCRYPT_DECRYPT_KEY)));
 
 //Register Interface to Class Mapping
-builder.Services.AddTransient<IAttributeMetaDataService, AttributeMetaDataService>();
+
 builder.Services.AddTransient<IUserService, UserService>();
 builder.Services.AddTransient<IUsers, Users>();
 builder.Services.AddTransient<ILog, Log>();
-builder.Services.AddTransient<IDepartmentSearchService, DepartmentSearchService>();
-builder.Services.AddTransient<IEmailService, EmailService>();
+
 builder.Services.AddTransient<IUrlCheck, UrlCheck>();
-builder.Services.AddTransient<IWebObjectMetadataService, WebObjectMetadataService>();
-builder.Services.AddTransient<IDepartmentsService, DepartmentsService>();
+
+
 builder.Services.AddTransient<IActiveDirectoryService, ActiveDirectoryService>();
-builder.Services.AddTransient<IIapmSolutionService, IapmSolutionService>();
+builder.Services.AddTransient<Ie2eService, e2eService>();
 
 //CORS Policy
 builder.Services.AddCors(options =>

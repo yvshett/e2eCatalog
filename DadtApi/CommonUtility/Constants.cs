@@ -148,7 +148,7 @@
         public const string STR_LOG_TYPE_INFO = "INFO";
         public const string STR_LOG_TYPE_ERROR = "ERROR";
 
-        public const string STR_ENCRYPT_DECRYPT_KEY = "REFEVEAzNjgyNw==";
+        public const string STR_ENCRYPT_DECRYPT_KEY = "SUFQTUAyMDgwOA==";
 
         public const string STR_YES_TEXT = "Yes";
         public const string STR_NO_TEXT = "No";

@@ -444,208 +444,154 @@ namespace IAPServices.CommonUtility
         public ADGroupSearch[] SearchADGroups(string SearchText, int? SizeLimit)
         {
             ADGroupSearch[] ReturnValue = null;
-            try
-            {
-                using (var connection = new LdapConnection())
-                {
-                    connection.SecureSocketLayer = true;
-                    connection.Connect("corpldap.intel.com", 3269);
-                    string UserID = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_generator").Select(j => j.ConfigurationValue).FirstOrDefault();
-                    string SecretId = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_key").Select(j => j.ConfigurationValue).FirstOrDefault();
-                    connection.Bind(UserID, EncryptionHelper.Decrypt(SecretId));
+            //try
+            //{
+            //    using (var connection = new LdapConnection())
+            //    {
+            //        connection.SecureSocketLayer = true;
+            //        connection.Connect("corpldap.intel.com", 3269);
+            //        string UserID = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_generator").Select(j => j.ConfigurationValue).FirstOrDefault();
+            //        string SecretId = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_key").Select(j => j.ConfigurationValue).FirstOrDefault();
+            //        connection.Bind(UserID, EncryptionHelper.Decrypt(SecretId));
 
-                    string searchFilter = "(&(objectCategory=group)(objectclass=group)";
+            //        string searchFilter = "(&(objectCategory=group)(objectclass=group)";
 
-                    if (SearchText.IndexOf("\\") != -1) SearchText = SearchText.Substring(SearchText.IndexOf("\\") + 1);
-                    searchFilter += "(|(samaccountname=*" + SearchText + "*)(Name=*" + SearchText + "*)))";
+            //        if (SearchText.IndexOf("\\") != -1) SearchText = SearchText.Substring(SearchText.IndexOf("\\") + 1);
+            //        searchFilter += "(|(samaccountname=*" + SearchText + "*)(Name=*" + SearchText + "*)))";
 
-                    var attributeList = new string[] { "displayName", "objectGUID" };
-                    var searchQueue = connection.Search("dc=corp,DC=intel,dc=com", LdapConnection.ScopeSub, searchFilter, attributeList, false, null as LdapSearchQueue);
+            //        var attributeList = new string[] { "displayName", "objectGUID" };
+            //        var searchQueue = connection.Search("dc=corp,DC=intel,dc=com", LdapConnection.ScopeSub, searchFilter, attributeList, false, null as LdapSearchQueue);
 
-                    LdapMessage message;
-                    ArrayList adGroups = new ArrayList();
+            //        LdapMessage message;
+            //        ArrayList adGroups = new ArrayList();
 
-                    int i = 1;
-                    while ((message = searchQueue.GetResponse()) != null)
-                    {
-                        if (message is LdapSearchResult searchResult)
-                        {
-                            ADGroupSearch adGroup = new ADGroupSearch();
-                            LdapEntry entry = searchResult.Entry;
+            //        int i = 1;
+            //        while ((message = searchQueue.GetResponse()) != null)
+            //        {
+            //            if (message is LdapSearchResult searchResult)
+            //            {
+            //                ADGroupSearch adGroup = new ADGroupSearch();
+            //                LdapEntry entry = searchResult.Entry;
 
-                            // Get the attribute set of the entry
-                            LdapAttributeSet attributeSet = entry.GetAttributeSet();
-                            System.Collections.IEnumerator ienum = attributeSet.GetEnumerator();
-                            if (i <= SizeLimit)
-                            {
-                                // Parse through the attribute set to get the attributes and the corresponding values 
-                                while (ienum.MoveNext())
-                                {
-                                    LdapAttribute attribute = (LdapAttribute)ienum.Current;
-                                    if (attribute.Name == "displayName")
-                                    {
-                                        adGroup.DisplayNm = attribute.StringValue;
-                                    }
-                                    if (attribute.Name == "objectGUID")
-                                    {
-                                        adGroup.Id = new Guid((byte[])(attribute.ByteValue as object)).ToString("D");
-                                    }
-                                }
-                                i++;
-                                adGroups.Add(adGroup);
-                            }
-                        }
-                    }
-                    connection.Disconnect();
-                    ReturnValue = (ADGroupSearch[])(adGroups.ToArray(typeof(ADGroupSearch)));
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message, ex.InnerException);
-            }
+            //                // Get the attribute set of the entry
+            //                LdapAttributeSet attributeSet = entry.GetAttributeSet();
+            //                System.Collections.IEnumerator ienum = attributeSet.GetEnumerator();
+            //                if (i <= SizeLimit)
+            //                {
+            //                    // Parse through the attribute set to get the attributes and the corresponding values 
+            //                    while (ienum.MoveNext())
+            //                    {
+            //                        LdapAttribute attribute = (LdapAttribute)ienum.Current;
+            //                        if (attribute.Name == "displayName")
+            //                        {
+            //                            adGroup.DisplayNm = attribute.StringValue;
+            //                        }
+            //                        if (attribute.Name == "objectGUID")
+            //                        {
+            //                            adGroup.Id = new Guid((byte[])(attribute.ByteValue as object)).ToString("D");
+            //                        }
+            //                    }
+            //                    i++;
+            //                    adGroups.Add(adGroup);
+            //                }
+            //            }
+            //        }
+            //        connection.Disconnect();
+            //        ReturnValue = (ADGroupSearch[])(adGroups.ToArray(typeof(ADGroupSearch)));
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    throw new Exception(ex.Message, ex.InnerException);
+            //}
             return ReturnValue;
         }
         public async Task<IEnumerable<WorkerSearch>> GetLdapWorkerSearch(string search, int? resultSize)
         {
             List<WorkerSearch> result = new List<WorkerSearch>();
-            using (var connection = new LdapConnection())
-            {
-                connection.SecureSocketLayer = true;
-                connection.Connect("corpldap.intel.com", 3269);
-                string UserID = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_generator").Select(j => j.ConfigurationValue).FirstOrDefault();
-                string SecretId = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_key").Select(j => j.ConfigurationValue).FirstOrDefault();
-                connection.Bind(UserID, EncryptionHelper.Decrypt(SecretId));
-                string searchFilter = "(&(objectCategory=user)(objectclass=user)(intelflags=1)";
-                int wwid;
-                if (int.TryParse(search, out wwid))
-                {
-                    searchFilter += "(mail=*)(EmployeeID=" + search + "*))";
-                }
-                else
-                {
-                    if (search.IndexOf("\\") != -1) search = search.Substring(search.IndexOf("\\") + 1);
-                    searchFilter += "(mail=*)(|(samaccountname=" + search + "*)(Name=" + search + "*)))";
-                }
-                var attributeList = new string[] { "employeeid", "intelorgunitcode", "samaccountname", "cn", "department", "employeestatuscode", "name", "imageurl" };
-                var searchQueue = connection.Search("dc=corp,DC=intel,dc=com", LdapConnection.ScopeSub, searchFilter, null, false, null as LdapSearchQueue);
+            //using (var connection = new LdapConnection())
+            //{
+            //    connection.SecureSocketLayer = true;
+            //    connection.Connect("corpldap.intel.com", 3269);
+            //    string UserID = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_generator").Select(j => j.ConfigurationValue).FirstOrDefault();
+            //    string SecretId = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_key").Select(j => j.ConfigurationValue).FirstOrDefault();
+            //    connection.Bind(UserID, EncryptionHelper.Decrypt(SecretId));
+            //    string searchFilter = "(&(objectCategory=user)(objectclass=user)(intelflags=1)";
+            //    int wwid;
+            //    if (int.TryParse(search, out wwid))
+            //    {
+            //        searchFilter += "(mail=*)(EmployeeID=" + search + "*))";
+            //    }
+            //    else
+            //    {
+            //        if (search.IndexOf("\\") != -1) search = search.Substring(search.IndexOf("\\") + 1);
+            //        searchFilter += "(mail=*)(|(samaccountname=" + search + "*)(Name=" + search + "*)))";
+            //    }
+            //    var attributeList = new string[] { "employeeid", "intelorgunitcode", "samaccountname", "cn", "department", "employeestatuscode", "name", "imageurl" };
+            //    var searchQueue = connection.Search("dc=corp,DC=intel,dc=com", LdapConnection.ScopeSub, searchFilter, null, false, null as LdapSearchQueue);
 
-                LdapMessage message;
-                int i = 1;
-                while ((message = searchQueue.GetResponse()) != null)
-                {
-                    if (message is LdapSearchResult searchResult)
-                    {
-                        var worker = new WorkerSearch();
-                        LdapEntry entry = searchResult.Entry;
+            //    LdapMessage message;
+            //    int i = 1;
+            //    while ((message = searchQueue.GetResponse()) != null)
+            //    {
+            //        if (message is LdapSearchResult searchResult)
+            //        {
+            //            var worker = new WorkerSearch();
+            //            LdapEntry entry = searchResult.Entry;
 
-                        // Get the attribute set of the entry
-                        LdapAttributeSet attributeSet = entry.GetAttributeSet();
-                        System.Collections.IEnumerator ienum = attributeSet.GetEnumerator();
-                        if (i <= resultSize)
-                        {
-                            // Parse through the attribute set to get the attributes and the corresponding values 
-                            while (ienum.MoveNext())
-                            {
-                                LdapAttribute attribute = (LdapAttribute)ienum.Current;
-                                Console.WriteLine(attribute.Name + ":" + attribute.StringValue);
-                                if (attribute.Name == "employeeID")
-                                {
-                                    worker.Wwid = attribute.StringValue;
-                                }
-                                else if (attribute.Name == "intelOrgUnitCode")
-                                {
-                                    worker.DepartmentCd = attribute.StringValue;
-                                }
-                                else if (attribute.Name == "sAMAccountName")
-                                {
-                                    worker.Idsid = attribute.StringValue;
-                                }
-                                else if (attribute.Name == "cn")
-                                {
-                                    worker.CcmailNm = attribute.StringValue;
-                                }
-                                else if (attribute.Name == "department")
-                                {
-                                    worker.DepartmentLevel5Cd = attribute.StringValue;
-                                }
-                                else if (attribute.Name == "employeeStatusCode")
-                                {
-                                    worker.Status = attribute.StringValue;
-                                }
-                                else
-                                {
-                                    worker.FullNm = attribute.StringValue;
-                                }
-                            }
-                            worker.imageURL = "https://photos.intel.com/images/" + worker.Wwid + ".jpg";
-                            i++;
-                            result.Add(worker);
-                        }
-                    }
-                }
-                connection.Disconnect();
-            }
+            //            // Get the attribute set of the entry
+            //            LdapAttributeSet attributeSet = entry.GetAttributeSet();
+            //            System.Collections.IEnumerator ienum = attributeSet.GetEnumerator();
+            //            if (i <= resultSize)
+            //            {
+            //                // Parse through the attribute set to get the attributes and the corresponding values 
+            //                while (ienum.MoveNext())
+            //                {
+            //                    LdapAttribute attribute = (LdapAttribute)ienum.Current;
+            //                    Console.WriteLine(attribute.Name + ":" + attribute.StringValue);
+            //                    if (attribute.Name == "employeeID")
+            //                    {
+            //                        worker.Wwid = attribute.StringValue;
+            //                    }
+            //                    else if (attribute.Name == "intelOrgUnitCode")
+            //                    {
+            //                        worker.DepartmentCd = attribute.StringValue;
+            //                    }
+            //                    else if (attribute.Name == "sAMAccountName")
+            //                    {
+            //                        worker.Idsid = attribute.StringValue;
+            //                    }
+            //                    else if (attribute.Name == "cn")
+            //                    {
+            //                        worker.CcmailNm = attribute.StringValue;
+            //                    }
+            //                    else if (attribute.Name == "department")
+            //                    {
+            //                        worker.DepartmentLevel5Cd = attribute.StringValue;
+            //                    }
+            //                    else if (attribute.Name == "employeeStatusCode")
+            //                    {
+            //                        worker.Status = attribute.StringValue;
+            //                    }
+            //                    else
+            //                    {
+            //                        worker.FullNm = attribute.StringValue;
+            //                    }
+            //                }
+            //                worker.imageURL = "https://photos.intel.com/images/" + worker.Wwid + ".jpg";
+            //                i++;
+            //                result.Add(worker);
+            //            }
+            //        }
+            //    }
+            //    connection.Disconnect();
+            //}
             return result;
         }
         public async Task<List<ADGroupSearch>> GetPAMSafeAccounts(int applicationId)
         {
             List<ADGroupSearch> ReturnValue = new List<ADGroupSearch>();
-            try
-            {
-                using (var connection = new LdapConnection())
-                {
-                    connection.SecureSocketLayer = true;
-                    connection.Connect("corpldap.intel.com", 3269);
-                    string UserID = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_generator").Select(j => j.ConfigurationValue).FirstOrDefault();
-                    string SecretId = _context.SystemConfigurations.Where(s => s.ConfigurationKey.ToLower() == "send_mail_auth_key").Select(j => j.ConfigurationValue).FirstOrDefault();
-                    connection.Bind(UserID, EncryptionHelper.Decrypt(SecretId));
-
-                    string searchFilter = "(&(objectCategory=group)(objectclass=group)";
-                    string SearchText = "PAM SAFE *-" + applicationId.ToString();
-
-                    if (SearchText.IndexOf("\\") != -1) SearchText = SearchText.Substring(SearchText.IndexOf("\\") + 1);
-                    searchFilter += "(|(samaccountname=" + SearchText + ")(Name=" + SearchText + ")))";
-
-                    var attributeList = new string[] { "displayName", "objectGUID" };
-                    var searchQueue = connection.Search("dc=corp,DC=intel,dc=com", LdapConnection.ScopeSub, searchFilter, attributeList, false, null as LdapSearchQueue);
-
-                    LdapMessage message;
-                    ArrayList adGroups = new ArrayList();
-
-                    while ((message = searchQueue.GetResponse()) != null)
-                    {
-                        if (message is LdapSearchResult searchResult)
-                        {
-                            ADGroupSearch adGroup = new ADGroupSearch();
-                            LdapEntry entry = searchResult.Entry;
-
-                            // Get the attribute set of the entry
-                            LdapAttributeSet attributeSet = entry.GetAttributeSet();
-                            System.Collections.IEnumerator ienum = attributeSet.GetEnumerator();
-                            // Parse through the attribute set to get the attributes and the corresponding values 
-                            while (ienum.MoveNext())
-                            {
-                                LdapAttribute attribute = (LdapAttribute)ienum.Current;
-                                if (attribute.Name == "displayName")
-                                {
-                                    adGroup.DisplayNm = attribute.StringValue;
-                                }
-                                if (attribute.Name == "objectGUID")
-                                {
-                                    adGroup.Id = new Guid((byte[])(attribute.ByteValue as object)).ToString("D");
-                                }
-                            }
-                            ReturnValue.Add(adGroup);
-                        }
-                    }
-                    connection.Disconnect();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw new Exception(ex.Message, ex.InnerException);
-            }
+           
             return ReturnValue;
         }
     }

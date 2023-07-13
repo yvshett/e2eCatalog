@@ -9,7 +9,7 @@ namespace DadtApi.CommonUtility
         public AutoMapperProfile()
         {
             CreateMap<User, UserMe>();
-            CreateMap<WebObjectMetadatum, WebObjectView>();
+           
         }
     }
 }

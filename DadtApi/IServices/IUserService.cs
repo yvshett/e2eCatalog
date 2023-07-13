@@ -5,6 +5,6 @@ namespace DadtApi.IServices
 {
     public interface IUserService
     {
-        Task<User> GetUserByWwid(string Wwid);
+    
     }
 }
